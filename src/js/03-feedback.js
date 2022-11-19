@@ -1,3 +1,4 @@
+import { throttle } from 'lodash.throttle';
 const throttle = require('lodash.throttle');
 const refs = {
   onInputData: document.querySelector('.feedback-form'),
