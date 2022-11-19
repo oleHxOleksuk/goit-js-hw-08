@@ -1,41 +1,37 @@
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-// Add imports above this line
-import { galleryItems } from './gallery-items';
-// Change code below this line
+import Player from '@vimeo/player';
+const throttle = require('lodash.throttle');
 
-console.log(galleryItems);
-
-const refs = {
-  galereyList: document.querySelector('.gallery'),
-  body: document.querySelector('body'),
-};
-
-refs.galereyList.insertAdjacentHTML(
-  'beforeend',
-  createImageCards(galleryItems)
-);
-refs.galereyList.addEventListener('click', onGaleryListClick);
-
-function createImageCards(galleryItems) {
-  return galleryItems
-    .map(({ original, preview, description }) => {
-      return `<div><a class="gallery__item" href="${original}">
-                <img class="gallery__image" src="${preview}" 
-                alt="${description}" />
-            </a></div>`;
-    })
-    .join('');
-}
-const lightbox = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionDelay: 250,
-  scrollZoom: false,
+const iframe = document.querySelector('iframe');
+const player = new Player(iframe);
+player.on('play', function () {
+  console.log('played the video!');
 });
-function onGaleryListClick(event) {
-  event.preventDefault();
-  if (!event.target.classList.contains('gallery__image')) {
-    return;
-  }
-}
-console.dir(refs.body);
+
+player.getVideoTitle().then(function (title) {
+  console.log('title:', title);
+});
+
+player.on(
+  'timeupdate',
+  throttle(function (data) {
+    console.log(data.seconds);
+    localStorage.setItem('timeUp', data.seconds);
+  }, 1000)
+);
+
+player
+  .setCurrentTime(localStorage.getItem('timeUp'))
+  .then(function (seconds) {
+    // seconds = the actual time that the player seeked to
+  })
+  .catch(function (error) {
+    switch (error.name) {
+      case 'RangeError':
+        // the time was less than 0 or greater than the video’s duration
+        break;
+
+      default:
+        // some other error occurred
+        break;
+    }
+  });
